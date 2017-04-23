@@ -51,12 +51,12 @@ def home(*args):
     <body>
     <p>This WSGI Calculator will take url inputs and do maths</p>
     <p>Examples:</p>
-    <p>http://localhost:8080/multiply/3/5   => 15</p>
-    <p>http://localhost:8080/add/23/42      => 65</p>
-    <p>http://localhost:8080/subtract/23/42 => -19</p>
-    <p>http://localhost:8080/divide/22/11   => 2</p>
-    <p>http://localhost:8080/divide/6/0     => HTTP "400 Bad Request"</p>
-    <p>http://localhost:8080/               => <html>Here's how to use this page...</html></p>
+    <p><a href="http://localhost:8080/multiply/3/5">http://localhost:8080/multiply/3/5</a>   => 15</p>
+    <p><a href="http://localhost:8080/add/23/42">http://localhost:8080/add/23/42</a>      => 65</p>
+    <p><a href="http://localhost:8080/subtract/23/42">http://localhost:8080/subtract/23/42</a> => -19</p>
+    <p><a href="http://localhost:8080/divide/22/11">http://localhost:8080/divide/22/11</a>   => 2</p>
+    <p><a href="http://localhost:8080/divide/6/0">http://localhost:8080/divide/6/0</a>     => HTTP "400 Bad Request"</p>
+    <p><a href="http://localhost:8080/">http://localhost:8080/</a>               => <html>Here's how to use this page...</html></p>
     </body>
     </html>"""
 
@@ -91,26 +91,17 @@ def resolve_path(path):
         func = home
         args = []
     else:
-        args = path.strip("/").split("/")
+        args = func_path.strip("/").split("/")
         func_name = args.pop(0)
         func = {"add": add, "subtract": subtract, "multiply": multiply, "divide": divide}.get(func_name)
-
-    # # TODO: Provide correct values for func and args. The
-    # # examples provide the correct *syntax*, but you should
-    # # determine the actual values of func and args using the
-    # # path.
-    # func = add
-    # args = ['25', '32']
-    #
+        args = map(int, args)
     return func, args
 
 
 def application(environ, start_response):
-    # TODO (bonus): Add error handling for a user attempting
-    # to divide by zero.
     headers = [('Content-type', 'text/html')]
-    body = home([])
-    status = "200 OK"
+    body = ""
+    status = ""
     try:
         path = environ.get('PATH_INFO')
         if path is None:
@@ -121,7 +112,9 @@ def application(environ, start_response):
     except NameError:
         status = "404 Not Found"
         body = "<h1>Not Found</h1>"
-
+    except ZeroDivisionError:
+        status = "400 Bad Request"
+        body = "<h1>Divide by zero</h1>"
     except Exception:
         status = "500 Internal Server Error"
         body = "<h1>Internal Server Error</h1>"
