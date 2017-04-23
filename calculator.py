@@ -93,7 +93,7 @@ def resolve_path(path):
     else:
         args = func_path.strip("/").split("/")
         func_name = args.pop(0)
-        func = {"add": add, "subtract": subtract, "multiply": multiply, "divide": divide}.get(func_name)
+        func = {"add": add, "subtract": subtract, "multiply": multiply, "divide": divide}.get(func_name, home)
         args = map(int, args)
     return func, args
 
@@ -125,9 +125,6 @@ def application(environ, start_response):
 
 
 if __name__ == '__main__':
-    # TODO: Insert the same boilerplate wsgiref simple
-    # server creation that you used in the book database.
     from wsgiref.simple_server import make_server
-
     srv = make_server('localhost', 8080, application)
     srv.serve_forever()
