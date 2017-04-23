@@ -41,58 +41,76 @@ To submit your homework:
 
 
 """
-body = """<html>
-<head>
-<title>Lab 3 - WSGI Calculator</title>
-</head>
-<body>
-<p>This WSGI Calculator will take url inputs and do maths</p>
-<p>Examples:</p>
-<p>http://localhost:8080/multiply/3/5   => 15</p>
-<p>http://localhost:8080/add/23/42      => 65</p>
-<p>http://localhost:8080/subtract/23/42 => -19</p>
-<p>http://localhost:8080/divide/22/11   => 2</p>
-<p>http://localhost:8080/divide/6/0     => HTTP "400 Bad Request"</p>
-<p>http://localhost:8080/               => <html>Here's how to use this page...</html></p>
-</body>
-</html>"""
+
+
+def home(*args):
+    return """<html>
+    <head>
+    <title>Lab 3 - WSGI Calculator</title>
+    </head>
+    <body>
+    <p>This WSGI Calculator will take url inputs and do maths</p>
+    <p>Examples:</p>
+    <p>http://localhost:8080/multiply/3/5   => 15</p>
+    <p>http://localhost:8080/add/23/42      => 65</p>
+    <p>http://localhost:8080/subtract/23/42 => -19</p>
+    <p>http://localhost:8080/divide/22/11   => 2</p>
+    <p>http://localhost:8080/divide/6/0     => HTTP "400 Bad Request"</p>
+    <p>http://localhost:8080/               => <html>Here's how to use this page...</html></p>
+    </body>
+    </html>"""
 
 
 def add(*args):
     """ Returns a STRING with the sum of the arguments """
+    return str(args[0] + args[1])
 
-    # TODO: Fill sum with the correct value, based on the
-    # args provided.
-    sum = "<p>0</p>"
 
-    return sum
+def subtract(*args):
+    """ Returns a STRING with the difference of the arguments """
+    return str(args[0] - args[1])
 
-# TODO: Add functions for handling more arithmetic operations.
+
+def multiply(*args):
+    """ Returns a STRING with the multiple of the arguments """
+    return str(args[0] * args[1])
+
+
+def divide(*args):
+    """ Returns a STRING with the divisible of the arguments """
+    return str(args[0] / args[1])
+
 
 def resolve_path(path):
     """
     Should return two values: a callable and an iterable of
     arguments.
     """
+    func_path = path.lstrip('/')
+    if not func_path:
+        func = home
+        args = []
+    else:
+        args = path.strip("/").split("/")
+        func_name = args.pop(0)
+        func = {"add": add, "subtract": subtract, "multiply": multiply, "divide": divide}.get(func_name)
 
-    # TODO: Provide correct values for func and args. The
-    # examples provide the correct *syntax*, but you should
-    # determine the actual values of func and args using the
-    # path.
-    func = add
-    args = ['25', '32']
-
+    # # TODO: Provide correct values for func and args. The
+    # # examples provide the correct *syntax*, but you should
+    # # determine the actual values of func and args using the
+    # # path.
+    # func = add
+    # args = ['25', '32']
+    #
     return func, args
 
+
 def application(environ, start_response):
-    # TODO: Your application code from the book database
-    # work here as well! Remember that your application must
-    # invoke start_response(status, headers) and also return
-    # the body of the response in BYTE encoding.
-    #
     # TODO (bonus): Add error handling for a user attempting
     # to divide by zero.
     headers = [('Content-type', 'text/html')]
+    body = home([])
+    status = "200 OK"
     try:
         path = environ.get('PATH_INFO')
         if path is None:
@@ -111,6 +129,7 @@ def application(environ, start_response):
         headers.append(('Content-length', str(len(body))))
         start_response(status, headers)
         return [body.encode('utf8')]
+
 
 if __name__ == '__main__':
     # TODO: Insert the same boilerplate wsgiref simple
