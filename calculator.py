@@ -41,6 +41,21 @@ To submit your homework:
 
 
 """
+body = """<html>
+<head>
+<title>Lab 3 - WSGI Calculator</title>
+</head>
+<body>
+<p>This WSGI Calculator will take url inputs and do maths</p>
+<p>Examples:</p>
+<p>http://localhost:8080/multiply/3/5   => 15</p>
+<p>http://localhost:8080/add/23/42      => 65</p>
+<p>http://localhost:8080/subtract/23/42 => -19</p>
+<p>http://localhost:8080/divide/22/11   => 2</p>
+<p>http://localhost:8080/divide/6/0     => HTTP "400 Bad Request"</p>
+<p>http://localhost:8080/               => <html>Here's how to use this page...</html></p>
+</body>
+</html>"""
 
 
 def add(*args):
@@ -48,7 +63,7 @@ def add(*args):
 
     # TODO: Fill sum with the correct value, based on the
     # args provided.
-    sum = "0"
+    sum = "<p>0</p>"
 
     return sum
 
@@ -77,9 +92,30 @@ def application(environ, start_response):
     #
     # TODO (bonus): Add error handling for a user attempting
     # to divide by zero.
-    pass
+    headers = [('Content-type', 'text/html')]
+    try:
+        path = environ.get('PATH_INFO')
+        if path is None:
+            raise NameError
+        func, args = resolve_path(path)
+        body = func(*args)
+        status = "200 OK"
+    except NameError:
+        status = "404 Not Found"
+        body = "<h1>Not Found</h1>"
+
+    except Exception:
+        status = "500 Internal Server Error"
+        body = "<h1>Internal Server Error</h1>"
+    finally:
+        headers.append(('Content-length', str(len(body))))
+        start_response(status, headers)
+        return [body.encode('utf8')]
 
 if __name__ == '__main__':
     # TODO: Insert the same boilerplate wsgiref simple
     # server creation that you used in the book database.
-    pass
+    from wsgiref.simple_server import make_server
+
+    srv = make_server('localhost', 8080, application)
+    srv.serve_forever()
